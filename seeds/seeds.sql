@@ -4,7 +4,7 @@ INSERT INTO department (name) VALUES
 ('Shipping');
 
 INSERT INTO role (title, salary, department_id) VALUES
-('boxer', 50000, 1);
+('Boxer', 50000, 1);
 
 INSERT INTO employee (
     first_name,
@@ -14,6 +14,6 @@ INSERT INTO employee (
 ) VALUES
 ('Mike', 'Myers', 1, NULL),
 ('Freddy', 'Krueger', 1, NULL),
-('Jason', 'Vorhees', 1, NULL),
+('Jason', 'Vorhees', 1, 2),
 ('Scream', 'Guy', 1, NULL),
 ('Green', 'Goblin', 1, 1)

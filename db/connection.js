@@ -7,4 +7,4 @@ const connection = mysql.createConnection({
     database: 'employee_tracker',
 })
 
-module.exports = connection
+    module.exports = connection
