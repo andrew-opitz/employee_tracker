@@ -8,7 +8,7 @@ const question = {
     type: 'list',
     message: 'What would you like to do?',
     name: 'Employee Tracker',
-    choices: ['view all departments', 'view all roles', 'view all employees', 'add a department', 'add a role', 'add an employee', 'update employee']
+    choices: ['view all departments', 'view all roles', 'view all employees', 'add a department', 'add a role', 'add an employee', 'update employee role']
 
 }
 function init () {
@@ -34,7 +34,7 @@ connection.connect()
             case 'add an employee':
                 addEmployee()
                 break
-            case 'update employee':
+            case 'update employee role':
                 updateEmployee()
                 break
                 
@@ -56,7 +56,15 @@ function viewDepartments() {
 }
 
 function viewRoles() {
-	connection.query('SELECT * FROM role;', (err, results) => {
+	connection.query(`
+    SELECT
+    role.id,
+    role.title,
+    department.name AS department,
+    role.salary
+    FROM role
+    JOIN department
+    ON role.department_id = department.id;`, (err, results) => {
 		if (err) {
 			console.error('Error executing query:', err)
 			return
@@ -156,7 +164,58 @@ function addRole() {
             }
 
 function addEmployee() {
+    connection.query(`
+    SELECT
+    role.id,
+    role.title,
+    CONCAT(employee.first_name, ' ', employee.last_name) AS employee_name
+    FROM role
+    LEFT JOIN employee
+    ON role.id = employee.role_id;`, (err, results) => {
+        if (err) {
+            console.error('Error executing query:', err)
+            
+            return
+        }
+        const allRoles = [...new Set(results.map(item => item.title))]
+        const allNames = results.map(item => item.employee_name)
+        allNames.unshift('None')
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'first',
+                message: 'Please enter the first name of the employee.'
+        }, {
+            type: 'input',
+            name: 'last',
+            message: 'Please enter the last name of the employee.'
+        }, {
+            type: 'list',
+            name: 'role',
+            message: 'What is the employees role?',
+            choices: Array.from(allRoles)
+        }, {
+            type: 'list',
+            name: 'manager',
+            message: 'Who is the employees manager?',
+            choices: Array.from(allNames)
+        }]).then((response => {
+            const firstName = response.first
+            const lastName = response.last
+            const roleID = results.find(item => item.title === response.role).id
+            const managerID = results.find(item => item.employee_name === response.manager)
+            const toADD = 'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)'
 
+            connection.query(toADD, [firstName, lastName, roleID, managerID], (err, results) => {
+                if (err) {
+                    console.error('Error inserting employee:', err)
+                    return
+                }
+                console.table(results)
+                init()
+            })
+        }))
+    })
 }
 
 function updateEmployee() {
