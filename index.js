@@ -178,8 +178,9 @@ function addEmployee() {
             return
         }
         const allRoles = [...new Set(results.map(item => item.title))]
-        const allNames = results.map(item => item.employee_name)
+        const allNames = results.map(item => item.employee_name).filter(name => name !== null)
         allNames.unshift('None')
+        
         inquirer.prompt([
             {
                 type: 'input',
@@ -202,8 +203,10 @@ function addEmployee() {
         }]).then((response => {
             const firstName = response.first
             const lastName = response.last
-            const roleID = results.find(item => item.title === response.role).id
-            const managerID = results.find(item => item.employee_name === response.manager)
+            const selectedRole = response.role
+            const roleID = results.find(item => item.title === selectedRole)?.id
+            const selectedManager = response.manager
+            const managerID = selectedManager === 'None' ? null : results.find(item => item.employee_name === selectedManager)?.id
             const toADD = 'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)'
 
             connection.query(toADD, [firstName, lastName, roleID, managerID], (err, results) => {
